@@ -2,7 +2,7 @@ FROM node:20-bullseye-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
-RUN npm ci --no-audit --no-fund
+RUN npm ci --include=dev --ignore-scripts --no-audit --no-fund
 
 FROM node:20-bullseye-slim AS builder
 WORKDIR /app

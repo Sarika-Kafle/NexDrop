@@ -45,7 +45,7 @@ Runtime validation note:
 **Commands**
 
 - **Install (local):** `npm install`
-- **Install (CI / reproducible):** `npm ci --include=dev`
+- **Install (CI / reproducible):** `npm ci --include=dev --ignore-scripts`
 - **Build (production):** `npm run build`
 - **Start (production):** `npm run start:prod` (uses built artifacts)
 - **Start (development):** `npm run dev`
@@ -99,3 +99,9 @@ worker: npm run email:worker
 - Some deployment platforms upload the `.next` folder directly and may refuse non-regular files (symlinks) under `.next/node_modules`. The build now removes those post-build to avoid upload failures.
 
 If you run into issues, prefer building inside the included Dockerfile or in a Debian-based CI runner.
+
+For SynthLaunch, use the same production commands listed above:
+
+- Install: `npm ci --include=dev --ignore-scripts`
+- Build: `npm run build`
+- Start: `npm run start:prod`

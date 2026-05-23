@@ -74,7 +74,7 @@ In your platform's dashboard, set all required runtime variables (see above).
 ### 3. First Deployment
 1. Push to `main` branch (or trigger manual deploy)
 2. Build will:
-   - Install dependencies with `npm ci --include=dev`
+  - Install dependencies with `npm ci --include=dev --ignore-scripts`
    - Run `npm run build` which:
      - Regenerates Prisma client with `linux-musl` target
      - Compiles Next.js without Prisma errors
