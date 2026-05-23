@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "next start",
-    "start:prod": "next start",
+    "start": "node .next/standalone/server.js",
+    "start:prod": "node .next/standalone/server.js",
     "postbuild": "rm -rf .next/node_modules .next/standalone/.next/node_modules || true && node scripts/fix-standalone-prisma.js",
     "lint": "eslint . --ext .ts,.tsx",
     "postinstall": "prisma generate",
