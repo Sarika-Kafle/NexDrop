@@ -8,3 +8,5 @@ coverage
 playwright-report
 deploy/certs
 .DS_Store
+tsconfig.tsbuildinfo
+.eslintcache
