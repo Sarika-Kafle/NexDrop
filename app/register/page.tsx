@@ -41,11 +41,11 @@ export default function RegisterPage() {
       <form onSubmit={submit} className="space-y-4">
         <div className="stack-4">
           <label className="sr-only" htmlFor="fullName">Full name</label>
-          <input id="fullName" name="fullName" className="field" placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+          <input id="fullName" name="fullName" autoComplete="name" required minLength={2} className="field" placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
           <label className="sr-only" htmlFor="email">Email</label>
-          <input id="email" name="email" className="field" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input id="email" name="email" type="email" autoComplete="email" required className="field" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} />
           <label className="sr-only" htmlFor="password">Password</label>
-          <input id="password" name="password" className="field" placeholder="Create a strong password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input id="password" name="password" className="field" placeholder="Create a strong password" type="password" autoComplete="new-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
         {error ? <p className="text-sm text-[color:var(--danger)]">{error}</p> : null}
         <button disabled={busy} className="btn btn-primary w-full" type="submit">{busy ? 'Creating...' : 'Create account'}</button>

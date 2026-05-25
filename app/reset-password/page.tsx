@@ -6,17 +6,19 @@ import { AuthShell, AuthLink } from '@/components/auth-shell';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [token, setToken] = useState(() => {
-    if (typeof window === 'undefined') return '';
-    try {
-      return new URLSearchParams(window.location.search).get('token') || '';
-    } catch {
-      return '';
-    }
-  });
+  const [token, setToken] = useState('');
   const [password, setPassword] = useState('');
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    try {
+      setToken(new URLSearchParams(window.location.search).get('token') || '');
+    } catch {
+      setToken('');
+    }
+  }, []);
+
   const hasToken = Boolean(token.trim());
 
   async function submit(e: React.FormEvent) {
@@ -54,13 +56,13 @@ export default function ResetPasswordPage() {
             {!hasToken ? (
               <>
                 <label className="sr-only" htmlFor="token">Reset token</label>
-                <input id="token" className="field" value={token} onChange={(e) => setToken(e.target.value)} placeholder="Reset token" />
+                <input id="token" className="field" value={token} onChange={(e) => setToken(e.target.value)} placeholder="Reset token" autoComplete="one-time-code" />
               </>
             ) : (
               <p className="detail text-sm">Recovery token loaded from your email link.</p>
             )}
             <label className="sr-only" htmlFor="password">New password</label>
-            <input id="password" className="field" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="New password" />
+            <input id="password" className="field" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="New password" autoComplete="new-password" required minLength={8} />
             <button className="btn btn-primary w-full" type="submit">Update password</button>
           </div>
         )}
