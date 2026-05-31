@@ -1,12 +1,10 @@
 import { Navbar } from '@/components/navbar';
 import { UploadZone } from '@/components/upload-zone';
 import { DashboardFiles } from '@/components/dashboard-files';
-import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@/lib/auth';
 import utils from '@/lib/utils.js';
 import { redirect } from 'next/navigation';
-import { BOOTSTRAP_ADMIN_SUBJECT } from '@/lib/admin-bootstrap';
 
 type Props = {
   searchParams?: Promise<{ [key: string]: string | undefined }>;
@@ -15,12 +13,6 @@ type Props = {
 export default async function DashboardPage({ searchParams }: Props) {
   const user = await currentUser();
   if (!user) redirect('/login');
-
-  // If this session is the bootstrap admin (env-based), send them to the
-  // admin UI instead of attempting to load a per-user dashboard from the DB.
-  if (user.id === BOOTSTRAP_ADMIN_SUBJECT) {
-    redirect('/admin');
-  }
 
   const resolvedSearchParams = (await searchParams) ?? {};
 
@@ -37,73 +29,69 @@ export default async function DashboardPage({ searchParams }: Props) {
     take: perPage
   });
 
-  const storageUsed = Number(user.storageUsed);
-  const storageLimit = Number(user.storageLimit);
-  const storagePercent = storageLimit > 0 ? Math.min(100, Math.round((storageUsed / storageLimit) * 100)) : 0;
-
   return (
     <>
       <Navbar />
-      <div className="page-shell landing-shell pb-10">
-        <div className="dashboard-shell gap-3">
-          <DashboardSidebar user={user as any} />
-          <main className="dashboard-main stack-4">
-            <section className="landing-banner card p-3 sm:p-4">
-              <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                <div className="stack-3 max-w-3xl">
-                  <span className="eyebrow">My Files</span>
-                  <h1 className="title-lg max-w-[14ch]">Store, manage, and share files from one place.</h1>
-                  <p className="supporting max-w-2xl text-base leading-7">A dense MediaFire-style file manager with quick actions, search, upload progress, and storage awareness.</p>
-                </div>
-                <div className="grid gap-2 sm:grid-cols-3 xl:w-[34rem]">
-                  <div className="info-card">
-                    <div className="stat-number">{utils.humanSize(user.storageUsed)}</div>
-                    <p className="detail mt-1 text-sm">Used storage</p>
-                  </div>
-                  <div className="info-card">
-                    <div className="stat-number">{files.length}</div>
-                    <p className="detail mt-1 text-sm">Visible files</p>
-                  </div>
-                  <div className="info-card">
-                    <div className="stat-number">{storagePercent}%</div>
-                    <p className="detail mt-1 text-sm">Storage full</p>
-                  </div>
-                </div>
+      <main className="page-shell stack-8 pb-12">
+        <section className="hero-shell">
+          <div className="hero-copy stack-6">
+            <span className="eyebrow">Workspace overview</span>
+            <div className="stack-4">
+              <h1 className="title-lg max-w-[12ch]">Your files, shares, and storage at a glance.</h1>
+              <p className="supporting max-w-2xl text-base leading-7">
+                Keep track of uploads, storage usage, and sharing actions from a dashboard that is easier to scan on every screen.
+              </p>
+            </div>
+          </div>
+          <div className="hero-panel stack-4">
+            <div className="section-card">
+              <p className="title-sm font-semibold">Storage used</p>
+              <p className="stat-number mt-2 text-[2.2rem]">{utils.humanSize(user.storageUsed)}</p>
+              <p className="detail mt-2 text-sm">of {utils.humanSize(user.storageLimit)} available</p>
+            </div>
+            <div className="section-grid">
+              <div className="feature-card">
+                <span className="pill">Files</span>
+                <p className="detail mt-3 text-sm leading-6">Browse recent uploads and actions from the updated file grid.</p>
               </div>
-            </section>
-
-            <UploadZone />
-
-            <section className="section-card stack-4 p-0 overflow-hidden">
-              <div className="flex flex-wrap items-end justify-between gap-2 px-4 pt-3 sm:px-5">
-                <div>
-                  <span className="eyebrow">Recent files</span>
-                  <h2 className="title-md mt-2">Latest uploads</h2>
-                </div>
-                <p className="meta text-sm">Page {page} of {Math.max(1, Math.ceil(total / perPage))}</p>
-              </div>
-              <DashboardFiles
-                files={files.map((file: any) => ({
-                  id: file.id,
-                  originalName: file.originalName,
-                  mimeType: file.mimeType,
-                  size: utils.humanSize(file.size),
-                  createdAt: file.createdAt.toISOString(),
-                  shareToken: file.shareLink?.token ?? null
-                }))}
-              />
-            </section>
-
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-sm text-[color:var(--muted)]">Showing {files.length} of {total} files</div>
-              <div className="flex gap-2">
-                {page > 1 ? <a className="btn btn-secondary btn-sm" href={`?page=${page - 1}&perPage=${perPage}`}>Previous</a> : null}
-                {page * perPage < total ? <a className="btn btn-secondary btn-sm" href={`?page=${page + 1}&perPage=${perPage}`}>Next</a> : null}
+              <div className="feature-card">
+                <span className="pill">Shares</span>
+                <p className="detail mt-3 text-sm leading-6">Create or open share links with fewer clicks.</p>
               </div>
             </div>
-          </main>
+          </div>
+        </section>
+
+        <UploadZone />
+
+        <section className="stack-4">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <span className="eyebrow">Recent files</span>
+              <h2 className="title-md mt-3">Latest uploads</h2>
+            </div>
+            <p className="meta text-sm">Page {page} of {Math.max(1, Math.ceil(total / perPage))}</p>
+          </div>
+          <DashboardFiles
+            files={files.map((file: any) => ({
+              id: file.id,
+              originalName: file.originalName,
+              mimeType: file.mimeType,
+              size: utils.humanSize(file.size),
+              createdAt: file.createdAt.toISOString(),
+              shareToken: file.shareLink?.token ?? null
+            }))}
+          />
+        </section>
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-sm text-[color:var(--muted)]">Showing {files.length} of {total} files</div>
+          <div className="flex gap-2">
+            {page > 1 ? <a className="btn btn-secondary btn-sm" href={`?page=${page - 1}&perPage=${perPage}`}>Previous</a> : null}
+            {page * perPage < total ? <a className="btn btn-secondary btn-sm" href={`?page=${page + 1}&perPage=${perPage}`}>Next</a> : null}
+          </div>
         </div>
-      </div>
+      </main>
     </>
   );
 }

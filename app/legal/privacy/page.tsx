@@ -1,13 +1,11 @@
 import Link from 'next/link';
+import { Logo } from '@/components/logo';
 
 export default function PrivacyPage() {
   return (
     <main className="page-shell stack-6">
       <header className="glass-nav card nav-shell">
-        <Link href="/" className="flex items-center gap-3">
-          <span className="brand-mark" aria-hidden="true">N</span>
-          <span className="font-semibold tracking-tight">NexDrop</span>
-        </Link>
+        <Logo />
         <div className="nav-links text-sm">
           <Link href="/login">Sign in</Link>
           <Link href="/register">Create account</Link>
