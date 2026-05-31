@@ -1,5 +1,43 @@
 import { getRedis } from './redis';
 
+type FallbackBucket = {
+  count: number;
+  resetAt: number;
+};
+
+const fallbackBuckets = new Map<string, FallbackBucket>();
+
+function fallbackRateLimit(key: string, limit: number, windowSeconds: number, now: number): RateLimitResult {
+  const resetAt = now + windowSeconds * 1000;
+  const bucket = fallbackBuckets.get(key);
+
+  if (!bucket || bucket.resetAt <= now) {
+    fallbackBuckets.set(key, { count: 1, resetAt });
+    return {
+      success: true,
+      remaining: Math.max(0, limit - 1),
+      resetAt: new Date(resetAt)
+    };
+  }
+
+  if (bucket.count >= limit) {
+    return {
+      success: false,
+      remaining: 0,
+      resetAt: new Date(bucket.resetAt),
+      retryAfter: Math.ceil((bucket.resetAt - now) / 1000)
+    };
+  }
+
+  bucket.count += 1;
+  fallbackBuckets.set(key, bucket);
+  return {
+    success: true,
+    remaining: Math.max(0, limit - bucket.count),
+    resetAt: new Date(bucket.resetAt)
+  };
+}
+
 export interface RateLimitOptions {
   key: string;
   limit: number;
@@ -27,12 +65,7 @@ export async function rateLimit(options: RateLimitOptions): Promise<RateLimitRes
 
   try {
     if (!redis || redis.status !== 'ready') {
-      // Redis unavailable - fail open (allow request)
-      return {
-        success: true,
-        remaining: limit,
-        resetAt: new Date(now + window * 1000)
-      };
+      return fallbackRateLimit(redisKey, limit, window, now);
     }
 
     // Lua script for atomic operation
@@ -74,12 +107,7 @@ export async function rateLimit(options: RateLimitOptions): Promise<RateLimitRes
     };
   } catch (error) {
     console.error('Rate limit error:', error);
-    // Fail open - allow request if Redis unavailable
-    return {
-      success: true,
-      remaining: limit,
-      resetAt: new Date(now + window * 1000)
-    };
+    return fallbackRateLimit(redisKey, limit, window, now);
   }
 }
 

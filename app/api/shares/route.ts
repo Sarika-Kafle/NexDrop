@@ -12,6 +12,13 @@ export async function POST(req: NextRequest) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // CSRF protection: double-submit cookie pattern
+  const csrfHeader = req.headers.get('x-csrf-token') || '';
+  const csrfCookie = req.cookies.get('nd_csrf')?.value || '';
+  if (!csrfHeader || !csrfCookie || csrfHeader !== csrfCookie) {
+    return NextResponse.json({ error: 'CSRF validation failed' }, { status: 403 });
+  }
+
   const body = await req.json().catch(() => null);
   const validation = createShareSchema.safeParse(body);
   if (!validation.success) {

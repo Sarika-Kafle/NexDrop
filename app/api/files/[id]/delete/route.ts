@@ -11,6 +11,13 @@ export async function DELETE(req: NextRequest, ctx: any) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // CSRF protection: double-submit cookie pattern
+  const csrfHeader = req.headers.get('x-csrf-token') || '';
+  const csrfCookie = req.cookies.get('nd_csrf')?.value || '';
+  if (!csrfHeader || !csrfCookie || csrfHeader !== csrfCookie) {
+    return NextResponse.json({ error: 'CSRF validation failed' }, { status: 403 });
+  }
+
   try {
     const params = await (ctx?.params ?? {});
     const fileId = String(params?.id || '');

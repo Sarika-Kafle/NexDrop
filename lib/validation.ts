@@ -148,6 +148,17 @@ export const updateStorageQuotaSchema = z.object({
   quotaGB: z.number().int().min(1).max(1000, 'Quota too large')
 });
 
+export const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  perPage: z.coerce.number().int().min(1).max(100).default(20)
+});
+
+export const searchPaginationSchema = z.object({
+  q: z.string().trim().max(200).default(''),
+  page: z.coerce.number().int().min(1).default(1),
+  perPage: z.coerce.number().int().min(1).max(50).default(10)
+});
+
 export type Register = z.infer<typeof registerSchema>;
 export type Login = z.infer<typeof loginSchema>;
 export type ForgotPassword = z.infer<typeof forgotPasswordSchema>;
@@ -158,3 +169,5 @@ export type CreateShare = z.infer<typeof createShareSchema>;
 export type DownloadShare = z.infer<typeof downloadShareSchema>;
 export type UpdateStorageQuota = z.infer<typeof updateStorageQuotaSchema>;
 export type UploadInit = z.infer<typeof uploadInitSchema>;
+export type Pagination = z.infer<typeof paginationSchema>;
+export type SearchPagination = z.infer<typeof searchPaginationSchema>;

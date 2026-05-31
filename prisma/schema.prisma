@@ -38,8 +38,6 @@ model Session {
   createdAt  DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@index([expiresAt])
   @@index([expiresAt], map: "idx_session_expiresat")
   @@index([userId], map: "idx_session_userid")
 }
@@ -61,8 +59,6 @@ model File {
   shareLink     ShareLink?
   uploadChunks  UploadChunk[]
 
-  @@index([userId])
-  @@index([userId, createdAt])
   @@index([userId], map: "idx_file_userid")
   @@index([userId, createdAt], map: "idx_file_userid_createdat")
 }
@@ -81,8 +77,6 @@ model ShareLink {
   createdBy           User?     @relation("ShareCreatedBy", fields: [createdById], references: [id])
   file                File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
 
-  @@index([token])
-  @@index([createdById])
   @@index([createdById], map: "idx_sharelink_createdbyid")
   @@index([token], map: "idx_sharelink_token")
 }
@@ -107,8 +101,6 @@ model AnalyticsEvent {
   createdAt DateTime @default(now())
   user      User?    @relation(fields: [userId], references: [id])
 
-  @@index([userId, eventType])
-  @@index([eventType, createdAt])
   @@index([eventType, createdAt], map: "idx_analytic_eventtype_createdat")
   @@index([userId, eventType], map: "idx_analytic_userid_eventtype")
 }

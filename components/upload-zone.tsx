@@ -8,6 +8,12 @@ export function UploadZone({ onUploaded }: { onUploaded?: () => void }) {
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('');
 
+  function selectFile(nextFile: File | null) {
+    setFile(nextFile);
+    setStatus('');
+    setProgress(0);
+  }
+
   async function uploadSelected() {
     if (!file) return;
     setBusy(true);
@@ -25,7 +31,7 @@ export function UploadZone({ onUploaded }: { onUploaded?: () => void }) {
       form.append('fileId', fileId);
       form.append('fileName', file.name);
       form.append('mimeType', file.type || 'application/octet-stream');
-      form.append('fileSize', String(file.size));
+      form.append('totalSize', String(file.size));
       form.append('chunkIndex', String(index));
       form.append('totalChunks', String(totalChunks));
 
@@ -42,15 +48,15 @@ export function UploadZone({ onUploaded }: { onUploaded?: () => void }) {
 
     setBusy(false);
     setStatus('Upload complete');
+    setProgress(100);
     setFile(null);
-    setProgress(0);
     onUploaded?.();
   }
 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     const f = e.dataTransfer.files?.[0];
-    if (f) setFile(f);
+    if (f) selectFile(f);
   }
 
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
@@ -75,14 +81,29 @@ export function UploadZone({ onUploaded }: { onUploaded?: () => void }) {
         tabIndex={0}
         onKeyDown={(e) => { if (e.key === 'Enter') document.getElementById('file-input')?.click(); }}
         className="rounded-2xl border border-dashed border-[var(--border-strong)] bg-[var(--panel-strong)] p-4">
-        <input id="file-input" className="field" type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+        <input id="file-input" className="field" type="file" onChange={(e) => selectFile(e.target.files?.[0] || null)} />
         <p className="mt-3 text-sm text-[color:var(--muted)]">Or drag and drop a file here. Large files are split into chunks automatically.</p>
       </div>
+      {file ? (
+        <div className="space-y-2 rounded-2xl border border-[var(--border)] bg-[var(--panel-strong)] p-3">
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <span className="truncate font-medium">{file.name}</span>
+            <span className="text-[color:var(--muted)]">{Math.round(file.size / 1024 / 1024)} MB</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-[color:var(--border)]" aria-hidden="true">
+            <div className="h-full rounded-full bg-[color:var(--accent)] transition-[width] duration-300 ease-out" style={{ width: `${progress}%` }} />
+          </div>
+          <div className="flex items-center justify-between gap-3 text-xs text-[color:var(--muted)]">
+            <span>{busy ? 'Uploading…' : progress === 100 ? 'Ready to upload again' : 'Queued'}</span>
+            <span>{progress}%</span>
+          </div>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-center gap-3">
         <button disabled={!file || busy} className="btn btn-primary" onClick={uploadSelected} type="button">
           {busy ? 'Uploading...' : 'Upload'}
         </button>
-        <span className="text-sm text-[color:var(--muted)]">{progress ? `${progress}%` : status}</span>
+        <span className="text-sm text-[color:var(--muted)]">{status}</span>
       </div>
     </div>
   );
